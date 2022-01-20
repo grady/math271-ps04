@@ -41,3 +41,6 @@ vignettes/*.pdf
 README.html
 
 *.Rproj
+
+daily_solar_radiation.txt
+*_instructions.html
