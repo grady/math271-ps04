@@ -153,3 +153,10 @@ The next couple of exercises are answered with code. You can use a chunk option 
 Answer this one with code and text.
 
 8. Here's one more question that you can answer fairly easily with these methods, although I'll leave it up to you to try and work out a way to do it: _Do the Station Names and Station IDs contain completely redundant information?_ Or stated another way: _Is Station ID just a code for the Station Name?_
+
+## Submitting your answers
+
+- Make sure you pass all the autograding tests in the `tests.R` file.
+- Make sure that you have commited the solution `.Rmd`, `.md`, `.html` files to git. If you have a `PS04_solution_files` directory (because you made a graph maybe?), commit that too.
+- Push everything to github. Double-check things there. If you used any extra packages make sure you added them to PACKAGES.
+- When you're happy, go to the Feedback pull request and add @grady as a reviewer.
