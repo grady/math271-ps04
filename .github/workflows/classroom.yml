@@ -7,34 +7,49 @@ jobs:
     name: Autograding
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Installing pak and building lockfile
-        id: install
-        shell: Rscript {0}
+      - uses: actions/checkout@v3
+      - name: Read PACKAGES file
+        id: packages
         run: |
-          cat("::set-output name=os-version::", sessionInfo()$running, "\n", sep = "")
-          cat("::set-output name=r-version::", if (grepl("development", rv <- R.Version()$version.string)) as.character(getRversion()) else rv, "\n", sep = "")
-          cat("::set-output name=lib-dir::", Sys.getenv("R_LIBS_USER"))
-          dir.create(Sys.getenv("R_LIBS_USER"), showWarnings=FALSE, recursive=TRUE)
-          install.packages("pak", repos="https://r-lib.github.io/p/pak/devel/", lib=Sys.getenv("R_LIBS_USER"))
-          .libPaths(Sys.getenv("R_LIBS_USER"))
-          dir.create(".github", showWarnings=FALSE)
-          reqs <- tryCatch(readLines("PACKAGES"), error=function(e) character())
-          reqs <- grep("^[^#]", grep("\\S", trimws(reqs), value=TRUE), value=TRUE)
-          core <- c("any::sessioninfo", "any::testthat", "any::rmarkdown")
-          pak::lockfile_create(c(core, reqs), lockfile=".github/pkg.lock")
-      - name: cache R packages
-        uses: pat-s/always-upload-cache@v2.1.5
-        with: 
-          path: |
-            ${{ steps.install.outputs.lib-dir }}/*
-            !${{ steps.install.outputs.lib-dir }}/pak
-          key: ${{ steps.install.outputs.os-version }}-${{ steps.install.outputs.r-version }}-${{ hashFiles('.github/pkg.lock') }}-4
-          restore-keys: |
-            ${{ steps.install.outputs.os-version }}-${{ steps.install.outputs.r-version }}-
-      - name: Install dependencies
-        shell: Rscript {0}
+            # Parse PACKAGE file requirements
+            echo 'deps<<EOF' >> "$GITHUB_OUTPUT"
+            grep -v ^# PACKAGES >> "$GITHUB_OUTPUT" || true
+            echo 'EOF' >> "$GITHUB_OUTPUT"
+      - name: Update r installation
+        uses: grady/r-lib-actions/setup-r@v2-branch
+      - name: Install dependencies from PACKAGES
+        uses: grady/r-lib-actions/setup-r-dependencies@v2-branch
+        with:
+          dependencies: 'NA'
+          packages: |
+            dplyr
+            jsonlite
+            testthat
+            rmarkdown
+            stringr
+            ${{ steps.packages.outputs.deps }}
+      - name: Execute tests.R
         run: |
-          pak::lockfile_install(".github/pkg.lock")
-      - uses: education/autograding@v1
-        
+            # Execute tests.R
+            cat("::group::Running tests\n")
+            test_results <- as.data.frame(testthat::test_file("tests.R"))
+            cat("::endgroup::\n")
+            cat("::group::Writing autograding.json\n")
+            fp <- file.path(".github", "classroom", "autograding.json")
+            dir.create(dirname(fp))
+            format_result <- function(res){
+              trimws(paste(lapply(res, format), collapse="\n\n"))
+            }
+            output_df <- dplyr::transmute(
+              test_results, name=test, run=tolower(!failed),
+              points=as.integer(stringr::str_extract(test, "^<(\\d+)>", group=1)),
+              setup=paste0("echo -n '", sapply(result, format_result), "'"))
+            write(jsonlite::toJSON(list(tests=output_df)), fp)
+            cat("::endgroup::\n")
+            cat("::group::Show generated autograding.json\n")
+            writeLines(jsonlite::prettify(paste(readLines(fp), collapse="\n")))
+            cat("::endgroup::\n")
+        shell: Rscript {0}
+      - name: Github Classroom autograder
+        uses: education/autograding@v1
+                

@@ -18,11 +18,9 @@ library(tidyverse)
 
 ## Solution document setup
 
-Create a solution document and save it as `PS04_solution.Rmd`. Change the knitr options to `keep_md: true`, like in the instructions document. You can edit the intro block by hand, or go to the _gear icon next to knit_ > _output options_ > _advanced_ > check _keep markdown source file_.
+Create a solution document and save it as `solution.Rmd`.
 
-Get in the habit of loading all packages in a setup chunk at the top of the file. Add change the chunk options area to have `include=FALSE, warning=FALSE, message=FALSE` to hide all the loading chatter.
-
-
+Get in the habit of loading all packages in a setup chunk at the top of the file. Change the chunk options area to have `include=FALSE, warning=FALSE, message=FALSE` to hide all the loading chatter, as shown in this instruction document.
 
 ## Daily Solar Irradiance for Hawaii
 
@@ -117,6 +115,5 @@ Answer this one with code and text.
 ## Submitting your answers
 
 - Make sure you pass all the autograding tests in the `tests.R` file.
-- Make sure that you have commited the solution `.Rmd`, `.md`, `.html` files to git. If you have a `PS04_solution_files` directory (because you made a graph maybe?), commit that too.
-- Push everything to github. Double-check things there. If you used any extra packages make sure you added them to PACKAGES.
-- When you're happy, go to the Feedback pull request and add @grady as a reviewer.
+- Make sure that you have committed the solution `.Rmd` file to git.
+- Push everything to github. Double-check things there. If you used any extra packages make sure you added them to the PACKAGES file so that the autograding script can install them.
